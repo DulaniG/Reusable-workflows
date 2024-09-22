@@ -19,6 +19,10 @@ on:
         description: 'AWS region'
         required: true
         type: string
+      Action:
+        description: 'Terraform plan/Apply'
+        required: true
+        type: string
 
 jobs:
   checks:
@@ -41,6 +45,7 @@ jobs:
     name: Terragrunt plan
     runs-on: ubuntu-latest
     if: ${{ github.event.pull_request.merged == false }}
+    if: ${{ inputs.Action == 'plan' }}
     needs:
       - checks
     steps:
@@ -66,8 +71,7 @@ jobs:
     name: Terragrunt deploy
     runs-on: ubuntu-latest
     if: ${{ github.event.pull_request.merged == true }}
-    needs:
-      - plan
+    if: ${{ inputs.Action == 'apply' }}
     steps:
       - name: 'Checkout'
         uses: actions/checkout@v3
