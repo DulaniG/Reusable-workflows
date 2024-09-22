@@ -1,0 +1,93 @@
+name: Terragrunt Action
+
+on:
+  workflow_call:
+    inputs:
+      Terraform_version:
+        description: 'Terraform version'
+        required: true
+        type: string
+      Terragrunt_version:
+        description: 'Terragrunt version'
+        required: true
+        type: string
+      Working_Directory:
+        description: 'Working directory'
+        required: true
+        type: string
+      AWS_region:
+        description: 'AWS region'
+        required: true
+        type: string
+
+jobs:
+  checks:
+    name: Terragrunt checks
+    runs_on: ubuntu-latest
+    if: ${{ github.event.pull_request.merged == false }}
+    steps:
+      name: 'checkout'
+      uses: actions/checkout@v3
+
+      name: Check terragrunt HCL
+      uses: gruntwork-io/terragrunt-action@v2
+      with:
+          tf_version: ${{ input.Terraform_version }}
+          tg_version: ${{ input.Terragrunt_version }}
+          tg_dir: ${{ input.Working_Directory }}
+          tg_command: 'hclfmt --terragrunt-check --terragrunt-diff'
+
+  plan:
+    name: Terragrunt plan
+    runs_on: ubuntu-latest
+    if: ${{ github.event.pull_request.merged == false }}
+    needs:
+      - checks
+    steps:
+      name: 'Checkout'
+      uses: actions/checkout@v3
+
+      name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ input.AWS_region }}
+
+      name: Plan
+      uses: gruntwork-io/terragrunt-action@v2
+      with:
+          tf_version: ${{ input.Terraform_version }}
+          tg_version: ${{ input.Terragrunt_version }}
+          tg_dir: ${{ input.Working_Directory }}
+          tg_command: 'plan'
+
+    deploy:
+      name: Terragrunt deploy
+      runs_on: ubuntu latest
+      if: ${{ github.event.pull_request.merged == true }}
+      needs:
+        - plan
+      steps:
+        name: 'Checkout'
+        uses: actions/checkout@v3
+
+        name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ input.AWS_region }}
+
+        name: Deploy
+        uses: gruntwork-io/terragrunt-action@v2
+        with:
+          tf_version: ${{ input.Terraform_version }}
+          tg_version: ${{ input.Terragrunt_version }}
+          tg_dir: ${{ input.Working_Directory }}
+          tg_command: 'apply'    
+
+      
+
+
+      
