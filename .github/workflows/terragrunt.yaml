@@ -20,37 +20,27 @@ on:
         required: true
         type: string
       Action:
-        description: 'Terraform plan/Apply'
+        description: 'Terraform plan/Apply/format'
         required: true
         type: string
 
 jobs:
-  checks:
+  terraform_action:
     name: Terragrunt checks
     runs-on: ubuntu-latest
-    if: ${{ github.event.pull_request.merged == false }}
     steps:
       - name: 'Checkout'
         uses: actions/checkout@v3
 
       - name: Check terragrunt HCL
         uses: gruntwork-io/terragrunt-action@v2
+        if: ${{ github.event.pull_request.merged == false }}
+        if: ${{ inputs.Action == 'format' }}
         with:
           tf_version: ${{ inputs.Terraform_version }}
           tg_version: ${{ inputs.Terragrunt_version }}
           tg_dir: ${{ inputs.Working_Directory }}
           tg_command: 'hclfmt --terragrunt-check --terragrunt-diff'
-
-  plan:
-    name: Terragrunt plan
-    runs-on: ubuntu-latest
-    if: ${{ github.event.pull_request.merged == false }}
-    if: ${{ inputs.Action == 'plan' }}
-    needs:
-      - checks
-    steps:
-      - name: 'Checkout'
-        uses: actions/checkout@v3
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -60,6 +50,8 @@ jobs:
           aws-region: ${{ inputs.AWS_region }}
 
       - name: Plan
+        if: ${{ github.event.pull_request.merged == false }}
+        if: ${{ inputs.Action == 'plan' }}
         uses: gruntwork-io/terragrunt-action@v2
         with:
           tf_version: ${{ inputs.Terraform_version }}
@@ -67,23 +59,9 @@ jobs:
           tg_dir: ${{ inputs.Working_Directory }}
           tg_command: 'plan'
 
-  deploy:
-    name: Terragrunt deploy
-    runs-on: ubuntu-latest
-    if: ${{ github.event.pull_request.merged == true }}
-    if: ${{ inputs.Action == 'apply' }}
-    steps:
-      - name: 'Checkout'
-        uses: actions/checkout@v3
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ inputs.AWS_region }}
-
       - name: Deploy
+        if: ${{ github.event.pull_request.merged == true }}
+        if: ${{ inputs.Action == 'apply' }}
         uses: gruntwork-io/terragrunt-action@v2
         with:
           tf_version: ${{ inputs.Terraform_version }}
