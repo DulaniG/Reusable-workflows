@@ -34,8 +34,7 @@ jobs:
 
       - name: Check terragrunt HCL
         uses: gruntwork-io/terragrunt-action@v2
-        if: ${{ github.event.pull_request.merged == false }}
-        if: ${{ inputs.Action == 'format' }}
+        if: ${{ github.event.pull_request.merged == false && inputs.Action == 'format' }}
         with:
           tf_version: ${{ inputs.Terraform_version }}
           tg_version: ${{ inputs.Terragrunt_version }}
@@ -50,8 +49,7 @@ jobs:
           aws-region: ${{ inputs.AWS_region }}
 
       - name: Plan
-        if: ${{ github.event.pull_request.merged == false }}
-        if: ${{ inputs.Action == 'plan' }}
+        if: ${{ github.event.pull_request.merged == false && inputs.Action == 'plan' }}
         uses: gruntwork-io/terragrunt-action@v2
         with:
           tf_version: ${{ inputs.Terraform_version }}
@@ -60,8 +58,7 @@ jobs:
           tg_command: 'plan'
 
       - name: Deploy
-        if: ${{ github.event.pull_request.merged == true }}
-        if: ${{ inputs.Action == 'apply' }}
+        if: ${{ github.event.pull_request.merged == true && inputs.Action == 'apply' }}
         uses: gruntwork-io/terragrunt-action@v2
         with:
           tf_version: ${{ inputs.Terraform_version }}
