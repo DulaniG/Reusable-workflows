@@ -26,11 +26,11 @@ on:
 
 jobs:
   terraform_action:
-    name: Terragrunt checks
+    name: Terragrunt checks ${{ inputs.Action }}
     runs-on: ubuntu-latest
     permissions:
-      contents: 'read'
-      id-token: 'write'
+        contents: 'read'
+        id-token: 'write'
     steps:
       - name: 'Checkout'
         uses: actions/checkout@v3
