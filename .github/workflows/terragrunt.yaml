@@ -26,18 +26,18 @@ on:
 
 jobs:
   terraform_action:
-    name: Terragrunt checks
+    name: Terragrunt checks ${{ inputs.Action }}
     runs-on: ubuntu-latest
     permissions:
       contents: 'read'
-      id-token: 'write'
+
     steps:
-      - name: 'Checkout'
+      - name: Checkout
         uses: actions/checkout@v3
 
       - name: Check terragrunt HCL
-        uses: gruntwork-io/terragrunt-action@v2
         if: ${{ github.event.pull_request.merged == false && inputs.Action == 'format' }}
+        uses: gruntwork-io/terragrunt-action@v2
         with:
           tf_version: ${{ inputs.Terraform_version }}
           tg_version: ${{ inputs.Terragrunt_version }}
