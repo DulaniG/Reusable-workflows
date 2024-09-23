@@ -46,7 +46,7 @@ jobs:
           tg_command: 'hclfmt --terragrunt-check --terragrunt-diff'
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v3
         with:
           role-to-assume: arn:aws:iam::100128615033:role/github.to.aws.oicd
           aws-region: ${{ inputs.AWS_region }}
